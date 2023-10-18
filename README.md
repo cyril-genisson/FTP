@@ -10,7 +10,7 @@ Au mieux on utiliserait sFTP...
 Les contraintes:
 Deux réseaux:
 - 192.168.1.0/24
-- 172.16.1.0/16
+- 172.16.1.0/24
 
 matériel: 2 switchs, 1 routeur, 1 serveur FTP, des postes clients sur les deux réseaux
 
