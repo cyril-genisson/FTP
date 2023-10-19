@@ -3,31 +3,38 @@ Pour ce qui est de la question posée en introduction et bien j'ai envie de dire
 que je ne passerai pas par un serveur FTP pour transférer des
 fichiers d'un ordinateur à un autre en toute sécurité.
 
-En effet l'ensemble des flux réseaux n'est pas crypté...
-Au mieux on utiliserait sFTP...
+En effet l'ensemble des flux réseaux n'est pas crypté (pas bravo les mots de passe en
+clair sur le réseau). Au mieux on utiliserait sFTP ce qui aurait permis par la même
+de ne laisser qu'un seul port d'ouvert pour deux services (sshd/sFTPd).
 
 # Job 1 à 5
-Les contraintes:
+## Les contraintes
+
 Deux réseaux:
 - 192.168.1.0/24
 - 172.16.1.0/24
 
-matériel: 2 switchs, 1 routeur, 1 serveur FTP, des postes clients sur les deux réseaux
+Matériel: 2 switchs, 1 routeur, 1 serveur FTP, des postes clients sur les deux réseaux
 
-Configurer un serveur FTP sur le serveur afin de permettre le transfert entre deux
-machines
+Configurer le service FTP sur le serveur afin de permettre le transfert entre deux
+machines.
 
 Créer un fichier **mon_test.txt** sur CISCO et y ajouter le texte de notre choix
 Transférer un fichier d'un PC du réseau 192.168.1.0 vers un PC du réseau 172.16.1.0
 et vice versa pour vérifier que le serveur fonctionnne.
 
+## Méthodologie employée
 Pour les besoins de l'exercice et parce que je n'avais pas envie de configurer à la mains
-les 10 postes clients j'ai pris la liberté d'installer un serveur DHCP pour chaque réseau.
+les 10 postes clients j'ai pris la liberté d'installer un serveur DHCP sur chaque réseau.
 
-D'autre part, tous les essais de transfert de fichier ont été effectués avec les PC0 et PC5.
+Les serveurs DHCP et FTP ont des adresses IP fixe sur leur réseau.
 
+D'autre part, tous les essais de transfert de fichiers ont été effectués avec les machines PC0 et PC5.
 
 **Voir la configuration CISCO dans le fichier [FTP.ptk](https://github.com/cyril-genisson/FTP/blob/main/FTP.pkt)**
+
+Les réseaux, le routage et le service FTP sont parfaitement opérationnels à la fin de tous nos tests après redémarrage
+de la simulation.
 
 # Job 6 à 10
 Pour ces différents Jobs, on doit donc en résumé:
@@ -50,7 +57,7 @@ Puisque notre machine a peu de besoins pour la démonstration nous utiliserons l
 - CPU: 2
 - Mémoire: 2048Mio
 - Image disque 10 Gio
-- Réseau routé: Configuration IPv4 192.168.100.0/24
+- Réseau routé: Configuration IPv4 192.168.145.0/24
 
 Paramètres d'installation:
 - Nom de machine: wolf
@@ -61,6 +68,7 @@ Paramètres d'installation:
     - 1 primaire 9.7GB / ext4
     - 5 logique 1.0GB swap swap
 - Paquetage: configuration minimale (les utilitaires de base)
+- IP: 192.168.145.130/24 passerelle: 192.168.145.1
 
 Une fois l'installation terminée on se précipite pour installer
 un serveur ssh en **urgence** (le mode console sur une machine
@@ -83,33 +91,33 @@ TriggeredBy: ○ ssh.socket
 ```
 
 Quand on n'y pense, je suis toujours un peu désemparé par des
-distributions qui active le service dès l'installation de celui-ci
+distributions qui active un service dès l'installation de celui-ci
 sans même se soucier de savoir si on a des petites retouchent
 à faire sur les fichiers de configuration ou si on l'a bien sécurisé.
-C'est surement pour cela que je n'aime pas Debian.
+C'est sûrement pour cela que je n'aime pas Debian.
 
 Bon, en attendant le service est opérationnel. Je me dépêche de générer
 une nouvelle paire de clef SSH pour ne plus avoir à rentrer mon mot de passe.
 
 ```Bash
 ssh-keygen -t ed25519 -C $COMMENT -N $PASSWD -f ~/.ssh/ftpdebian &&
-ssh-copy-id kaman@wolf
+ssh-copy-id kaman@192.168.145.130
 ```
 
 Pour finir cette entrée en matière, installons en quatrième vitesse 2/3 paquets
-somme toute indispensable pour pouvoir travailler dans de bonnes conditions:
+somme toute indispensables pour pouvoir travailler dans de bonnes conditions:
 ```Bash
 sudo apt install -y vim bash-completion screen
 ```
 
-Maintenant que l'on se sent un peu plus à la maison passons à la suite.
+Maintenant que l'on se sent un peu plus à la maison, passons à la suite.
 
-## Un vaut mieux que deux tu l'auras
+## Un tiens vaut mieux que deux tu l'auras
 Ne connaissant pas très bien ce pingouin, je me suis posé une toute petite
 question: est-ce qu'une installation minimale me fournit néanmoins un pare-feux
 avec tous les ports bloqués (sauf peut-être ssh _22/tcp_ pour l'administration)?
-Et bien la réponse est non. Ce pinguoin n'a vraiment pas froid aux yeux. Il ne me
-reste plus qu'à installer iptables et tout la clique Netfilter avec un outil de
+Et bien la réponse est non. Cette distribution n'a vraiment pas froid aux yeux. Il ne me
+reste plus qu'à installer Netfilter/iptables et tout la clique avec un outil de
 configuration a peu près sympathique: firewalld.
 
 ```Bash
@@ -128,7 +136,7 @@ systemctl status firewalld
 ```
 
 Une fois installé, on regarde rapidement les services ou ports
-autorisés et on s'occupe d'ouvrir le port pour le service ftp _21/tcp_
+autorisés et on s'occupe d'ouvrir les port pour le service ftp _20-21/tcp_
 
 ```Bash
 sudo firewall-cmd --list-all
@@ -150,18 +158,32 @@ sudo firewall-cmd --permanent --add-service=ftp
 success
 sudo firwall-cmd --reload
 success
+sudo firewall-cmd --list-all
+public
+  target: default
+  icmp-block-inversion: no
+  interfaces:
+  sources:
+  services: dhcpv6-client ftp ssh
+  ports:
+  protocols:
+  forward: yes
+  masquerade: no
+  forward-ports:
+  source-ports:
+  icmp-blocks:
+  rich rules:
 ```
 
-Voilà qui est un tantiné mieux.
+Voilà qui est un tantinet mieux.
 
 ## Le vif du sujet
-Il est peut-être temps de parler installation de serveur ftp.
+Il est peut-être temps de parler installation de service ftpd.
 D'après le Job 9 on peut voir que l'on ne va pas trop se prendre
 la tête avec l'identification des utilisateurs car ils seront
-déjà connu du serveur. On aurait très bien pu faire cette installation
+déjà connu du serveur, ce sont des utilisateurs du système. On aurait très bien pu faire cette installation
 en stockant des utilisateurs virtuels du service dans une base de donnée
 comme MariaDB ou encore plus simple SQLite.
-
 
 ```Bash
 # Installation du serveur et vérification du service
@@ -187,9 +209,9 @@ for k in Merry Pippin ; do
     sudo useradd -m -c $k -s /bin/bash $(echo $k | tr [:upper:] [:lower:])
 done
 
-# On change les mots de passes
-echo "merry:kalimac" | chpasswd
-echo "pippin:secondbreakfast" | chpasswd
+# On change les mots de passe
+echo "merry:kalimac" | chgpasswd
+echo "pippin:secondbreakfast" | chgpasswd
 ```
 
 Et voilà un serveur parfaitement opérationnel.
@@ -218,4 +240,11 @@ ftp> quit
 221 Au revoir.
 ```
 
-Encore une mission accomplie...
+**Encore une mission accomplie!!!**
+
+## Conclusion
+Rétrospectivement, ce travail n'est pas très bon d'un point de vue DevSecOps.
+Il aurait été sans doute plus judicieux de configurer le serveur convenablement
+avec un outil comme Ansible / AnsibleTower-AWX. Je pense que c'est ce que je
+ferais les prochaines fois car prendre la main de cette façon sur un serveur
+pour la création et la gestion d'un service n'est vraiment pas des plus heureux.
