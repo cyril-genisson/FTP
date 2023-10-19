@@ -51,7 +51,7 @@ Commençons par le commencement!
 ## Installation d'une VM Debian
 Comme à notre habitude, nous utiliserons l'hyperviseur KVM pour gérer la virtualisation de notre machine.
 Pour plus de détail sur son utlisation, j'invite le lecteur à lire ou relire  l'excellente 
-documentation (et ce propos n'engage pas que moi &#x1F60E; ) [Hyperception](https://github.com/cyril-genisson/Hyperception/blob/main/Documentation-hyperception-GENISSON.pdf).
+documentation (et ce propos n'engage pas que moi ;-p ) [Hyperception](https://github.com/cyril-genisson/Hyperception/blob/main/Documentation-hyperception-GENISSON.pdf).
 
 Puisque notre machine a peu de besoins pour la démonstration nous utiliserons les paramètres suivants:
 - CPU: 2
