@@ -49,7 +49,7 @@ Pour ces différents Jobs, on doit donc en résumé:
 Commençons par le commencement!
 
 ## Installation d'une VM Debian
-Comme à notre habitude nous utiliserons la virtualisation KVM pour virtualiser notre machine.
+Comme à notre habitude, nous utiliserons l'hyperviseur KVM pour gérer la virtualisation de notre machine.
 Pour plus de détail sur son utlisation, j'invite le lecteur à lire ou relire  l'excellente 
 documentation (et ce propos n'engage pas que moi &#x1F60E; ) [Hyperception](https://github.com/cyril-genisson/Hyperception/blob/main/Documentation-hyperception-GENISSON.pdf).
 
