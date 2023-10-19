@@ -92,7 +92,7 @@ TriggeredBy: ○ ssh.socket
 
 Quand on n'y pense, je suis toujours un peu désemparé par des
 distributions qui active un service dès l'installation de celui-ci
-sans même se soucier de savoir si on a des petites retouchent
+sans même se soucier de savoir si on a des petites retouches
 à faire sur les fichiers de configuration ou si on l'a bien sécurisé.
 C'est sûrement pour cela que je n'aime pas Debian.
 
